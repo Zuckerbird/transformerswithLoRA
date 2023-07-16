@@ -48,6 +48,8 @@ from ...utils import (
 from ...utils.model_parallel_utils import assert_device_map, get_device_map
 from .configuration_gpt2 import GPT2Config
 
+import loralib as lora
+
 
 logger = logging.get_logger(__name__)
 
@@ -959,7 +961,7 @@ class GPT2LMHeadModel(GPT2PreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         self.transformer = GPT2Model(config)
-        self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
+        self.lm_head = lora.Linear(config.n_embd, config.vocab_size, r=16,lora_alpha=1,lora_dropout=0.1)
 
         # Model parallel
         self.model_parallel = False
@@ -1378,7 +1380,7 @@ class GPT2ForSequenceClassification(GPT2PreTrainedModel):
         super().__init__(config)
         self.num_labels = config.num_labels
         self.transformer = GPT2Model(config)
-        self.score = nn.Linear(config.n_embd, self.num_labels, bias=False)
+        self.score = lora.Linear(config.n_embd, self.num_labels,r=16,lora_alpha=1,lora_dropout=0.1)
 
         # Model parallel
         self.model_parallel = False
